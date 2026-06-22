@@ -6,8 +6,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const path = require("path");
+
+app.use(express.static(__dirname));
+
 app.get("/", (req, res) => {
-    res.send("VoltMind Backend Running 🚀");
+    res.sendFile(path.join(__dirname, "index.html"));
 });
 
 app.post("/ask", (req, res) => {
