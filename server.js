@@ -1,3 +1,10 @@
+require("dotenv").config();
+
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+});
 const express = require("express");
 const cors = require("cors");
 
@@ -14,43 +21,44 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
 
-app.post("/ask", (req, res) => {
+app.post("/ask", async (req, res) => {
 
-    const question = req.body.question || "";
+    try {
 
-    let answer = "";
+        const question = req.body.question;
 
-    if(question.toLowerCase().includes("ferranti")){
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    role: "system",
+                    content:
+                    "You are VoltMind, an engineering tutor. Explain concepts clearly and simply."
+                },
+                {
+                    role: "user",
+                    content: question
+                }
+            ]
+        });
 
-        answer =
-        "Ferranti Effect occurs in long transmission lines when the receiving-end voltage becomes higher than the sending-end voltage due to the charging current caused by line capacitance.";
+        res.json({
+            success: true,
+            answer: response.choices[0].message.content
+        });
+
+    } catch(err) {
+
+        console.error(err);
+
+        res.json({
+            success: false,
+            answer: "VoltMind AI is currently unavailable."
+        });
 
     }
-    else if(question.toLowerCase().includes("transformer")){
-
-        answer =
-        "A transformer transfers AC power from one circuit to another using electromagnetic induction between windings.";
-
-    }
-    else if(question.toLowerCase().includes("ohms law")){
-
-        answer =
-        "Ohm's Law states that current equals voltage divided by resistance.";
-
-    }
-    else{
-
-        answer =
-        `VoltMind received your question: "${question}". AI integration is the next step.`;
-    }
-
-    res.json({
-        success: true,
-        answer: answer
-    });
 
 });
-
 app.listen(3000, () => {
     console.log("🚀 VoltMind Server running on port 3000");
 });
